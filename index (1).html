@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRIND — Próximamente</title>
+    <meta name="description" content="GRIND — Gimnasio de combate y entrenamiento físico. Próximamente en Montevideo.">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="GRIND — Próximamente">
+    <meta property="og:description" content="Gimnasio de combate y entrenamiento físico. Próximamente en Montevideo.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://grind.uy">
+    <meta property="og:image" content="https://grind.uy/logo.png">
+
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <!-- Google Fonts: Inter para el texto complementario -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1100px;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 900px;
+            height: auto;
+            display: block;
+            margin-bottom: 3rem;
+        }
+
+        .icon-detail {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.75;
+        }
+
+        .icon-detail .line {
+            width: 50px;
+            height: 1px;
+            background-color: #000;
+        }
+
+        .icon-detail svg {
+            width: 28px;
+            height: 28px;
+            display: block;
+        }
+
+        .tagline {
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: #000;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+
+        .subtext {
+            font-size: 0.85rem;
+            font-weight: 300;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #666;
+            text-align: center;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 300;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Tablet */
+        @media (max-width: 768px) {
+            .logo {
+                max-width: 90%;
+                margin-bottom: 2.5rem;
+            }
+            .tagline {
+                font-size: 0.85rem;
+                letter-spacing: 0.3em;
+            }
+            .subtext {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Móvil */
+        @media (max-width: 480px) {
+            body {
+                padding: 1.5rem;
+            }
+            .logo {
+                max-width: 100%;
+                margin-bottom: 2rem;
+            }
+            .icon-detail {
+                margin-bottom: 1.5rem;
+                gap: 1rem;
+            }
+            .icon-detail .line {
+                width: 35px;
+            }
+            .icon-detail svg {
+                width: 24px;
+                height: 24px;
+            }
+            .tagline {
+                font-size: 0.75rem;
+                letter-spacing: 0.25em;
+            }
+            .subtext {
+                font-size: 0.7rem;
+                letter-spacing: 0.1em;
+            }
+            .footer {
+                font-size: 0.65rem;
+                bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <img src="logo.png" alt="GRIND" class="logo">
+        <div class="icon-detail" aria-hidden="true">
+            <span class="line"></span>
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Guante de boxeo estilizado -->
+                <path d="M18 20 C18 12, 24 8, 32 8 C44 8, 52 14, 52 26 C52 32, 50 36, 46 40 L46 50 C46 54, 43 57, 39 57 L25 57 C21 57, 18 54, 18 50 Z"/>
+                <!-- Línea del pulgar -->
+                <path d="M18 28 C14 28, 12 31, 12 35 C12 39, 14 42, 18 42"/>
+                <!-- Línea de los nudillos -->
+                <path d="M26 22 C30 19, 38 19, 46 22"/>
+                <!-- Puño/muñequera -->
+                <line x1="18" y1="50" x2="46" y2="50"/>
+            </svg>
+            <span class="line"></span>
+        </div>
+        <p class="tagline">Próximamente</p>
+        <p class="subtext">Montevideo · Uruguay</p>
+    </main>
+
+    <footer class="footer">
+        © GRIND 2026
+    </footer>
+</body>
+</html>
