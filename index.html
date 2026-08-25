@@ -5,16 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy"
   content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://grind.uy;
-           script-src 'unsafe-inline';
+           script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
            style-src 'unsafe-inline' https://fonts.googleapis.com;
            font-src https://fonts.gstatic.com;
            img-src 'self' https://grind.uy data: blob:;
-           connect-src https://api.mercadopago.com https://api.zetasoftware.com;
-           object-src 'none'; frame-src 'none';">
+           connect-src https://api.mercadopago.com https://api.zetasoftware.com https://wksfenpjhvxdzncgxyja.supabase.co;
+           object-src 'none'; frame-src https://www.openstreetmap.org;">
 <title>GRIND — Gimnasio de combate y performance · Montevideo</title>
 <meta name="description" content="GRIND — Striking, MMA, 12 Rounds y Performance en Palermo, Montevideo. Clases dirigidas, grupos reducidos, 400 m².">
 <meta name="theme-color" content="#080808">
-<link rel="icon" href="logo.png">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
 <meta property="og:type" content="website">
 <meta property="og:title" content="GRIND — Gimnasio de combate y performance">
 <meta property="og:description" content="Combate & Entrenamiento Físico Funcional. Clases dirigidas. Grupos reducidos. Durazno 1508, Palermo, Montevideo.">
@@ -365,8 +367,8 @@ td.tdn{font-weight:500;color:var(--paper);}
 /* ── CONTACTO ── */
 #contacto{padding:80px 52px;}
 .contact-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--wire);margin-top:48px;}
-.contact-map{background:var(--ink2);overflow:hidden;min-height:220px;}
-.contact-map iframe{width:100%;height:100%;min-height:220px;border:none;display:block;filter:grayscale(80%) contrast(1.1) brightness(0.85);}
+.contact-map{background:var(--ink2);overflow:hidden;height:320px;}
+.contact-map iframe{width:100%;height:100%;border:none;display:block;}
 .ig-feed{background:var(--ink);padding:28px 28px;}
 .ig-feed-ttl{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;}
 .ig-feed-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
@@ -1033,7 +1035,7 @@ html{scroll-behavior:smooth;}
         </div>
         <div class="contact-map" style="flex:1;">
           <iframe
-            src="https://maps.google.com/maps?q=Durazno+1508+Palermo+Montevideo+Uruguay&t=&z=16&ie=UTF8&iwloc=&output=embed"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-56.1865755%2C-34.9125556%2C-56.1785755%2C-34.9075556&layer=mapnik&marker=-34.9100556%2C-56.1825755"
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
             title="GRIND — Durazno 1508, Palermo, Montevideo">
@@ -1141,33 +1143,19 @@ html{scroll-behavior:smooth;}
           <div><div class="a-page-title">Dashboard</div><div class="a-page-sub" id="dashWeek"></div></div>
         </div>
         <div class="m-grid">
-          <div class="m-card hl"><div class="m-lbl">Asistencias esta semana</div><div class="m-val">247</div><div class="m-chg up">↑ +18% vs anterior</div></div>
-          <div class="m-card"><div class="m-lbl">Reservas activas hoy</div><div class="m-val">63</div><div class="m-chg up">↑ +5 vs ayer</div></div>
-          <div class="m-card"><div class="m-lbl">Tasa de asistencia</div><div class="m-val">84<small>%</small></div><div class="m-chg">— sin cambio</div></div>
-          <div class="m-card"><div class="m-lbl">No-shows esta semana</div><div class="m-val">12</div><div class="m-chg dn">↑ +3 vs anterior</div></div>
+          <div class="m-card hl"><div class="m-lbl">Asistencias esta semana</div><div class="m-val" id="mvAsistencias">—</div></div>
+          <div class="m-card"><div class="m-lbl">Reservas activas hoy</div><div class="m-val" id="mvReservasHoy">—</div></div>
+          <div class="m-card"><div class="m-lbl">Tasa de asistencia</div><div class="m-val" id="mvTasa">—<small>%</small></div></div>
+          <div class="m-card"><div class="m-lbl">No-shows esta semana</div><div class="m-val" id="mvNoShows">—</div></div>
         </div>
         <div class="d-row">
           <div class="d-panel">
-            <div class="d-title">Asistencias por día</div>
-            <div class="chart-wrap">
-              <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:52px"></div><div class="bar s" style="height:44px"></div></div><div class="chart-day">Lun</div></div>
-              <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:68px"></div><div class="bar s" style="height:58px"></div></div><div class="chart-day">Mar</div></div>
-              <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:45px"></div><div class="bar s" style="height:40px"></div></div><div class="chart-day">Mié</div></div>
-              <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:82px"></div><div class="bar s" style="height:70px"></div></div><div class="chart-day">Jue</div></div>
-              <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:95px"></div><div class="bar s" style="height:80px"></div></div><div class="chart-day">Vie</div></div>
-            </div>
-            <div style="display:flex;gap:14px;margin-top:12px;">
-              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);"><div style="width:10px;height:1px;background:var(--paper)"></div>Esta semana</div>
-              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);"><div style="width:10px;height:1px;background:var(--wire2)"></div>Semana anterior</div>
-            </div>
+            <div class="d-title">Asistencias por día — esta semana</div>
+            <div class="chart-wrap" id="attChartWrap"></div>
           </div>
           <div class="d-panel">
-            <div class="d-title">Consumo por actividad</div>
-            <div class="bd-list">
-              <div class="bd-item"><div class="bd-hdr"><span class="bd-name">Striking</span><span class="bd-pct">48%</span></div><div class="bd-bar"><div class="bd-fill" style="width:48%;background:var(--paper)"></div></div></div>
-              <div class="bd-item"><div class="bd-hdr"><span class="bd-name">12 Rounds</span><span class="bd-pct">32%</span></div><div class="bd-bar"><div class="bd-fill" style="width:32%;background:var(--mute)"></div></div></div>
-              <div class="bd-item"><div class="bd-hdr"><span class="bd-name">Funcional</span><span class="bd-pct">20%</span></div><div class="bd-bar"><div class="bd-fill" style="width:20%;background:var(--wire2)"></div></div></div>
-            </div>
+            <div class="d-title">Consumo por actividad — esta semana</div>
+            <div class="bd-list" id="bdList"></div>
             <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--wire);">
               <div class="m-lbl">Clases casi llenas</div>
               <div id="capAlerts" style="margin-top:8px;"></div>
@@ -1426,6 +1414,8 @@ html{scroll-behavior:smooth;}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-integration.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1539,6 +1529,18 @@ html{scroll-behavior:smooth;}
     return (d === 0 || d === 6) ? 'Lunes' : DAYS[d];
   }
 
+  // Fecha ISO (YYYY-MM-DD) concreta de la próxima ocurrencia de `dia` en la semana actual.
+  function classDateFor(dia) {
+    const today    = nowMVD();
+    const todayIdx = today.getDay();
+    const dayIdx   = DAYS.indexOf(dia);
+    let diff = dayIdx - todayIdx;
+    if (diff < 0) diff += 7;
+    const d = new Date(today);
+    d.setDate(today.getDate() + diff);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
   function weekDates() {
     const today    = nowMVD();
     const todayIdx = today.getDay();
@@ -1564,29 +1566,30 @@ html{scroll-behavior:smooth;}
   }
 
   /* ── PERSISTENCE ── */
-  function saveState() {
-    try {
-      localStorage.setItem('grind_classes_v1',  JSON.stringify(classes));
-      localStorage.setItem('grind_users_v1',    JSON.stringify(users));
-      localStorage.setItem('grind_bookings_v1', JSON.stringify(bookings));
-    } catch(e) {}
+  // La persistencia real vive en Supabase (ver supabase-integration.js).
+  // refreshData() releé el estado actual del servidor después de cada mutación.
+  async function refreshData() {
+    const data = await window._sb.loadData();
+    if (data) { users = data.users; classes = data.classes; bookings = data.bookings; }
+    return data;
   }
-  function loadState() {
-    // Limpiar clases viejas del localStorage para usar el horario del manual
-    localStorage.removeItem('grind_classes_v1');
-    try {
-      const c = localStorage.getItem('grind_classes_v1');
-      const u = localStorage.getItem('grind_users_v1');
-      const b = localStorage.getItem('grind_bookings_v1');
-      if (c) { classes  = JSON.parse(c); nextCid = Math.max(...classes.map(x=>x.id))+1;  }
-      if (u) { users    = JSON.parse(u); nextUid = Math.max(...users.map(x=>x.id))+1;    }
-      if (b) { bookings = JSON.parse(b); nextBid = Math.max(...bookings.map(x=>x.id))+1; }
-    } catch(e) {}
-    // Always reset floating UI state on load
+  async function loadState() {
     pendingClass     = null;
     pendingCancelId  = null;
-    const confirm = document.getElementById('bookConfirm');
-    if (confirm) confirm.classList.remove('show');
+    const confirmEl = document.getElementById('bookConfirm');
+    if (confirmEl) confirmEl.classList.remove('show');
+
+    const result = await window._sb.init();
+    if (result.session && result.user) {
+      currentUser = result.user;
+      users       = result.users    || [];
+      classes     = result.classes  || [];
+      bookings    = result.bookings || [];
+    } else {
+      classes  = await window._sb.loadPublicClasses();
+      users    = [];
+      bookings = [];
+    }
   }
 
   /* ── RATE LIMIT ── */
@@ -1603,7 +1606,7 @@ html{scroll-behavior:smooth;}
     document.body.style.overflow = '';
     document.getElementById('loginErr').style.display = 'none';
   }
-  function doLogin() {
+  async function doLogin() {
     const errEl = document.getElementById('loginErr');
     const now   = Date.now();
     if (now < loginLockUntil) {
@@ -1612,22 +1615,27 @@ html{scroll-behavior:smooth;}
     }
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const pass  = document.getElementById('loginPass').value;
-    const user  = users.find(u => u.email===email && u.pass===pass && u.active);
-    if (user) {
+    try {
+      const user = await window._sb.login(email, pass);
       loginAttempts = 0; currentUser = user;
+      await refreshData();
       errEl.style.display = 'none';
       closeLoginModal();
       user.role === 'admin' ? showAdminPanel() : applyMember();
       if (pendingClass) triggerBooking(pendingClass);
-    } else {
+    } catch (errMsg) {
       loginAttempts++;
       if (loginAttempts >= 5) { loginLockUntil = Date.now()+30000; loginAttempts = 0; errEl.textContent = 'Demasiados intentos. Esperá 30 segundos.'; }
-      else { errEl.textContent = 'Email o contraseña incorrectos.'; }
+      else { errEl.textContent = String(errMsg); }
       errEl.style.display = 'block';
     }
   }
-  function doLogout() {
+  async function doLogout() {
+    await window._sb.logout();
     currentUser = null; pendingClass = null;
+    classes  = await window._sb.loadPublicClasses();
+    users    = [];
+    bookings = [];
     document.getElementById('adminPanel').style.display  = 'none';
     document.getElementById('publicSite').style.display  = 'block';
     document.getElementById('navLoginBtn').style.display = '';
@@ -1646,8 +1654,51 @@ html{scroll-behavior:smooth;}
     document.getElementById('adminUname').textContent   = currentUser.name;
     const now = new Date();
     document.getElementById('dashWeek').textContent     = `Semana ${now.getDate()} ${now.toLocaleString('es',{month:'long'})} ${now.getFullYear()}`;
-    renderClassesTable(); renderUsersTable(); renderAttendance(); renderCapAlerts();
+    renderClassesTable(); renderUsersTable(); renderAttendance(); renderCapAlerts(); renderDashboard();
     window.scrollTo(0,0);
+  }
+
+  /* ── DASHBOARD (datos reales de la semana en curso) ── */
+  function renderDashboard() {
+    const el = document.getElementById('mvAsistencias');
+    if (!el) return; // vista aún no montada
+
+    const present = bookings.filter(b => b.status === 'present');
+    const absent  = bookings.filter(b => b.status === 'absent');
+    const reserved= bookings.filter(b => b.status === 'reserved');
+    const todayIso = classDateFor(todayWorkday());
+    const reservasHoy = bookings.filter(b => b.classDate === todayIso && b.status !== 'absent').length;
+    const attRate = (present.length + absent.length) > 0
+      ? Math.round(present.length / (present.length + absent.length) * 100)
+      : 0;
+
+    document.getElementById('mvAsistencias').textContent = present.length;
+    document.getElementById('mvReservasHoy').textContent = reservasHoy;
+    document.getElementById('mvTasa').innerHTML = `${attRate}<small>%</small>`;
+    document.getElementById('mvNoShows').textContent = absent.length;
+
+    // Asistencias por día (solo "presentes", esta semana)
+    const dayAbbr = { 'Lunes':'Lun','Martes':'Mar','Miércoles':'Mié','Jueves':'Jue','Viernes':'Vie' };
+    const dayCounts = WORKDAYS.map(dia => {
+      const iso = classDateFor(dia);
+      return present.filter(b => b.classDate === iso).length;
+    });
+    const maxDay = Math.max(1, ...dayCounts);
+    document.getElementById('attChartWrap').innerHTML = WORKDAYS.map((dia,i) => `
+      <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:${Math.round(dayCounts[i]/maxDay*90)}px"></div></div><div class="chart-day">${dayAbbr[dia]}</div></div>
+    `).join('');
+
+    // Consumo por actividad (sobre presentes, esta semana)
+    const DISCIPLINES = ['Striking','MMA','12 Rounds','Performance'];
+    const discColors  = ['var(--paper)','var(--mute)','var(--wire2)','var(--slash2)'];
+    const discCounts = DISCIPLINES.map(disc =>
+      present.filter(b => classes.find(c => c.id === b.classId)?.actividad === disc).length
+    );
+    const totalPresent = discCounts.reduce((a,b)=>a+b,0);
+    document.getElementById('bdList').innerHTML = DISCIPLINES.map((disc,i) => {
+      const pct = totalPresent > 0 ? Math.round(discCounts[i]/totalPresent*100) : 0;
+      return `<div class="bd-item"><div class="bd-hdr"><span class="bd-name">${esc(disc)}</span><span class="bd-pct">${pct}%</span></div><div class="bd-bar"><div class="bd-fill" style="width:${pct}%;background:${discColors[i]}"></div></div></div>`;
+    }).join('');
   }
   // Mapeo plan-usuario → nombre de card en #planes
   const PLAN_TO_CARD = { 'Mensual': 'Flex', 'Semestral': 'Plus', 'Anual': 'Elite' };
@@ -1922,29 +1973,30 @@ html{scroll-behavior:smooth;}
     document.getElementById('bookConfirm').classList.add('show');
   }
 
-  function confirmBooking() {
+  async function confirmBooking() {
     const cell = pendingClass; if (!cell) return;
     document.getElementById('bookConfirm').classList.remove('show');
+    if (!currentUser) { pendingClass = null; return; }
     const cid = parseInt(cell.dataset.cid);
     const cls = classes.find(c => c.id === cid);
     if (!cls || cls.reservas >= cls.capacidad) return;
     // Avoid duplicate booking
-    if (currentUser && bookings.find(b => b.classId === cid && b.userId === currentUser.id)) {
+    if (bookings.find(b => b.classId === cid && b.userId === currentUser.id)) {
       showToast('Ya tenés lugar reservado', `${cls.actividad} · ${cls.horario}`);
       pendingClass = null; return;
     }
-    cls.reservas++;
-    bookings.push({
-      id: nextBid++,
-      classId: cid,
-      userId: currentUser?.id || null,
-      name: currentUser?.name || 'Invitado',
-      plan: currentUser?.plan || '—',
-      reservedAt: 'Ahora',
-      status: 'reserved',
-      monthCount: 0,
-    });
-    saveState();
+    try {
+      await window._sb.createBooking({
+        classId:    cid,
+        classDate:  classDateFor(cls.dia),
+        memberName: currentUser.name,
+        memberPlan: currentUser.plan,
+      });
+    } catch (errMsg) {
+      showToast('No se pudo reservar', String(errMsg));
+      pendingClass = null; return;
+    }
+    await refreshData();
     renderScheduleGrid();
   renderHeroStrip();
   renderRanking();
@@ -1998,18 +2050,21 @@ html{scroll-behavior:smooth;}
     document.getElementById('bookConfirm').classList.add('show');
   }
 
-  function confirmCancelBooking() {
+  async function confirmCancelBooking() {
     document.getElementById('bookConfirm').classList.remove('show');
     const b   = bookings.find(x => x.id === pendingCancelId);
     const cls = b ? classes.find(c => c.id === b.classId) : null;
     if (b && cls) {
-      bookings = bookings.filter(x => x.id !== pendingCancelId);
-      cls.reservas = Math.max(0, cls.reservas - 1);
-      saveState();
-      renderScheduleGrid();
-      renderHeroStrip();
-      renderCapAlerts();
-      showToast('Reserva cancelada', `${cls.actividad} · ${cls.dia} ${cls.horario}`);
+      const ok = await window._sb.cancelBooking(b.id);
+      if (ok) {
+        await refreshData();
+        renderScheduleGrid();
+        renderHeroStrip();
+        renderCapAlerts();
+        showToast('Reserva cancelada', `${cls.actividad} · ${cls.dia} ${cls.horario}`);
+      } else {
+        showToast('No se pudo cancelar', 'Intentá de nuevo.');
+      }
     }
     pendingCancelId = null;
     resetConfirmBtn();
@@ -2079,7 +2134,7 @@ html{scroll-behavior:smooth;}
     document.getElementById('classModal').classList.remove('active');
     document.body.style.overflow=''; editCid=null;
   }
-  function saveClass() {
+  async function saveClass() {
     const actividad=document.getElementById('cActividad').value;
     const dia      =document.getElementById('cDia').value;
     const horario  =document.getElementById('cHorario').value;
@@ -2088,18 +2143,17 @@ html{scroll-behavior:smooth;}
     const estado   =document.getElementById('cEstado').value;
     const desc     =document.getElementById('cDesc').value.trim();
     if(!horario){showErr('classErr','Completá el horario.');return;}
-    if(editCid){
-      Object.assign(classes.find(x=>x.id===editCid),{actividad,dia,horario,duracion,capacidad,estado,desc});
-      showToast('Clase actualizada',`${actividad} · ${dia} ${horario}`);
-    } else {
-      classes.push({id:nextCid++,actividad,dia,horario,duracion,capacidad,reservas:0,estado,desc});
-      showToast('Clase creada',`${actividad} · ${dia} ${horario}`);
-    }
-    saveState(); closeClassModal(); renderClassesTable(); renderScheduleGrid(); renderCapAlerts();
+    const saved = await window._sb.saveClass({id:editCid, actividad, dia, horario, duracion, capacidad, estado, desc});
+    if (!saved) { showErr('classErr','No se pudo guardar la clase.'); return; }
+    showToast(editCid ? 'Clase actualizada' : 'Clase creada', `${actividad} · ${dia} ${horario}`);
+    await refreshData();
+    closeClassModal(); renderClassesTable(); renderScheduleGrid(); renderCapAlerts();
   }
-  function deleteClass(id) {
-    classes=classes.filter(c=>c.id!==id);
-    saveState(); renderClassesTable(); renderScheduleGrid(); renderCapAlerts();
+  async function deleteClass(id) {
+    const ok = await window._sb.deleteClass(id);
+    if (!ok) { showToast('No se pudo eliminar', 'Intentá de nuevo.'); return; }
+    await refreshData();
+    renderClassesTable(); renderScheduleGrid(); renderCapAlerts();
     showToast('Clase eliminada','');
   }
 
@@ -2134,14 +2188,16 @@ html{scroll-behavior:smooth;}
   }
   function openUserModal(id) {
     editUid=id;
-    const u=id?users.find(x=>x.id===id):null;
-    document.getElementById('userMttl').textContent=id?'Editar usuario':'Nuevo usuario';
+    const u = id ? users.find(x=>x.id===id) : null;
+    document.getElementById('userMttl').textContent = id ? 'Editar usuario' : 'Nuevo usuario';
     document.getElementById('uName').value =u?.name ||'';
     document.getElementById('uCI').value   =u?.ci   ||'';
     document.getElementById('uEmail').value=u?.email||'';
-    document.getElementById('uPass').value ='';
+    document.getElementById('uEmail').disabled = !!id; // el email no se puede cambiar después de creado
+    document.getElementById('uPass').closest('.field').style.display = id ? 'none' : '';
     document.getElementById('uPlan').value =u?.plan ||'Mensual';
     document.getElementById('uRole').value =u?.role ||'member';
+    document.getElementById('uRole').disabled = true; // el rol se promueve manualmente en Supabase, no acá
     document.getElementById('uPriority').checked = u?.priority || false;
     document.getElementById('uOneOnOne').checked = u?.oneOnOne || false;
     document.getElementById('uPaseLibre').checked = u?.paseLibre || false;
@@ -2153,34 +2209,58 @@ html{scroll-behavior:smooth;}
     document.getElementById('userModal').classList.remove('active');
     document.body.style.overflow=''; editUid=null;
   }
-  function saveUser() {
-    const name    =document.getElementById('uName').value.trim();
-    const ci      =document.getElementById('uCI').value.trim().replace(/\D/g,'');
-    const email   =document.getElementById('uEmail').value.trim().toLowerCase();
-    const pass    =document.getElementById('uPass').value;
-    const plan    =document.getElementById('uPlan').value;
-    const role    =document.getElementById('uRole').value;
-    const priority=document.getElementById('uPriority').checked;
-    const oneOnOne=document.getElementById('uOneOnOne').checked;
+  async function saveUser() {
+    const name     =document.getElementById('uName').value.trim();
+    const ci       =document.getElementById('uCI').value.trim().replace(/\D/g,'');
+    const plan     =document.getElementById('uPlan').value;
+    const priority =document.getElementById('uPriority').checked;
+    const oneOnOne =document.getElementById('uOneOnOne').checked;
     const paseLibre=document.getElementById('uPaseLibre').checked;
-    if(!name||!ci)           {showErr('userErr','Completá nombre y CI.');return;}
-    if(!email)               {showErr('userErr','El email es obligatorio.');return;}
-    if(!editUid&&!pass)      {showErr('userErr','La contraseña es obligatoria.');return;}
-    if(pass&&pass.length<6)  {showErr('userErr','Contraseña mínimo 6 caracteres.');return;}
+    if(!name||!ci) {showErr('userErr','Completá nombre y CI.');return;}
     if(users.find(u=>u.ci===ci&&u.id!==editUid)){showErr('userErr','CI ya registrada.');return;}
-    if(users.find(u=>u.email===email&&u.id!==editUid)){showErr('userErr','Email ya registrado.');return;}
-    if(editUid){
-      const u=users.find(x=>x.id===editUid);
-      u.name=name;u.ci=ci;u.email=email;u.plan=plan;u.role=role;u.priority=priority;u.oneOnOne=oneOnOne;u.paseLibre=paseLibre;if(pass)u.pass=pass;
-      showToast('Usuario actualizado',name);
-    } else {
-      users.push({id:nextUid++,name,ci,email,pass,role,plan,active:true,priority,oneOnOne,paseLibre});
-      showToast('Usuario creado',`${name} · CI ${ci}`);
+
+    if (!editUid) {
+      // Creación de socio nuevo
+      const email = document.getElementById('uEmail').value.trim().toLowerCase();
+      const pass  = document.getElementById('uPass').value;
+      if(!email)              {showErr('userErr','El email es obligatorio.');return;}
+      if(!pass||pass.length<6){showErr('userErr','Contraseña mínimo 6 caracteres.');return;}
+      try {
+        await window._sb.adminCreateUser({ email, password: pass, name, ci, plan, priority, oneOnOne, paseLibre });
+        showToast('Usuario creado', `${name} · CI ${ci}`);
+        await refreshData();
+        closeUserModal(); renderUsersTable();
+      } catch (errMsg) {
+        showErr('userErr', String(errMsg));
+      }
+      return;
     }
-    saveState(); closeUserModal(); renderUsersTable();
+
+    const active =users.find(x=>x.id===editUid)?.active ?? true;
+    try {
+      await window._sb.adminUpdateUser({ userId: editUid, name, ci, plan, priority, active, oneOnOne, paseLibre });
+      showToast('Usuario actualizado', name);
+      await refreshData();
+      closeUserModal(); renderUsersTable();
+    } catch (errMsg) {
+      showErr('userErr', String(errMsg));
+    }
   }
-  function toggleUser(id){const u=users.find(u=>u.id===id);if(u&&u.id!==currentUser?.id){u.active=!u.active;saveState();renderUsersTable();}}
-  function deleteUser(id){if(id===currentUser?.id)return;users=users.filter(u=>u.id!==id);saveState();renderUsersTable();}
+  async function toggleUser(id){
+    const u=users.find(u=>u.id===id); if(!u||u.id===currentUser?.id) return;
+    try {
+      await window._sb.adminUpdateUser({ userId:id, name:u.name, ci:u.ci, plan:u.plan, priority:u.priority, active:!u.active, oneOnOne:u.oneOnOne, paseLibre:u.paseLibre });
+      await refreshData(); renderUsersTable();
+    } catch (errMsg) { showToast('No se pudo actualizar', String(errMsg)); }
+  }
+  async function deleteUser(id){
+    if(id===currentUser?.id) return;
+    try {
+      await window._sb.adminDeleteUser(id);
+      await refreshData(); renderUsersTable();
+      showToast('Usuario eliminado','');
+    } catch (errMsg) { showToast('No se pudo eliminar', String(errMsg)); }
+  }
 
   /* ── ATTENDANCE ── */
   function setAttDay(day, btn) {
@@ -2287,11 +2367,12 @@ html{scroll-behavior:smooth;}
     }).join('');
   }
 
-  function setAttStatus(bookingId, status) {
+  async function setAttStatus(bookingId, status) {
     const b = bookings.find(x => x.id === bookingId);
     if (!b) return;
-    b.status = status;
-    saveState();
+    const ok = await window._sb.setAttendanceStatus(bookingId, status);
+    if (!ok) { showToast('No se pudo actualizar', 'Intentá de nuevo.'); return; }
+    await refreshData();
     renderAttList();
     renderAttClassCards();
     renderCapAlerts();
@@ -2373,7 +2454,7 @@ html{scroll-behavior:smooth;}
     rows.forEach(c => {
       const pct       = Math.round(c.reservas / c.capacidad * 100);
       const full      = pct >= 100;
-      const myBooking = currentUser && bookings.find(b => Number(b.classId)===c.id && Number(b.userId)===currentUser.id && b.status==='reserved');
+      const myBooking = currentUser && bookings.find(b => Number(b.classId)===c.id && b.userId===currentUser.id && b.status==='reserved');
       const capColor  = myBooking ? 'var(--green)' : pct>=100 ? 'var(--slash)' : pct>=80 ? 'var(--mute)' : 'var(--paper)';
       const chip      = document.createElement('div');
       chip.className  = 'hero-class-chip' + (full && !myBooking ? ' full' : '') + (myBooking ? ' booked' : '');
@@ -2400,32 +2481,50 @@ html{scroll-behavior:smooth;}
     });
   }
 
-  loadState();
-  // Force-hide floating panel on start
-  (function(){ const p=document.getElementById('bookConfirm'); if(p) p.classList.remove('show'); })();
-  attSelectedDay     = 'Lunes';
-  attSelectedClassId = classes.find(c => c.dia === 'Lunes')?.id || 1;
-  renderScheduleGrid();
-  renderHeroStrip();
-  renderRanking();
-  // Social proof: primera clase del día (horario más temprano de clases activas)
-  (function(){
+  (async function boot() {
+    await loadState();
+    // Force-hide floating panel on start
+    const p = document.getElementById('bookConfirm'); if (p) p.classList.remove('show');
+    attSelectedDay     = 'Lunes';
+    attSelectedClassId = classes.find(c => c.dia === 'Lunes')?.id || 1;
+
+    if (currentUser?.role === 'admin')       showAdminPanel();
+    else if (currentUser)                    applyMember();
+    else {
+      renderScheduleGrid();
+      renderHeroStrip();
+      renderRanking();
+    }
+
+    // Social proof: primera clase del día (horario más temprano de clases activas)
     const el = document.getElementById('spFirstClass');
-    if (!el) return;
-    const active = classes.filter(c => c.estado === 'active');
-    if (!active.length) return;
-    const earliest = active.map(c => c.horario).sort()[0];
-    el.textContent = earliest || '—';
-    const el2 = document.getElementById('espacioFirstClass');
-    if (el2) el2.textContent = earliest || '—';
+    if (el) {
+      const active = classes.filter(c => c.estado === 'active');
+      const earliest = active.length ? active.map(c => c.horario).sort()[0] : null;
+      el.textContent = earliest || '—';
+      const el2 = document.getElementById('espacioFirstClass');
+      if (el2) el2.textContent = earliest || '—';
+    }
+
+    // Reaccionar a expiración/renovación de sesión en segundo plano
+    window._sb.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_OUT' && currentUser) {
+        currentUser = null;
+        classes = await window._sb.loadPublicClasses();
+        users = []; bookings = [];
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('publicSite').style.display = 'block';
+        renderScheduleGrid(); renderHeroStrip(); renderRanking();
+      }
+    });
   })();
 
   /* ── STREAK ── */
   function calcStreak() {
     if (!currentUser) return { days:0, attended:0, absent:0, month:0 };
     const uid      = currentUser.id;
-    const present  = bookings.filter(b => Number(b.userId)===uid && b.status==='present');
-    const absent   = bookings.filter(b => Number(b.userId)===uid && b.status==='absent');
+    const present  = bookings.filter(b => b.userId===uid && b.status==='present');
+    const absent   = bookings.filter(b => b.userId===uid && b.status==='absent');
     const attended = present.length;
     const absentCt = absent.length;
     const month    = present.filter(b => b.monthCount > 0).length || present.length;
@@ -2468,61 +2567,35 @@ html{scroll-behavior:smooth;}
 
   /* ── RANKING DE RACHAS ── */
   function calcUserStreak(uid) {
-    const present = bookings.filter(b => Number(b.userId)===uid && b.status==='present');
-    const absent  = bookings.filter(b => Number(b.userId)===uid && b.status==='absent');
+    const present = bookings.filter(b => b.userId===uid && b.status==='present');
+    const absent  = bookings.filter(b => b.userId===uid && b.status==='absent');
     const total   = present.length; // total clases entrenadas (no consecutivas)
     return { days: total, attended: present.length, absent: absent.length };
   }
 
-  function renderRanking() {
+  async function renderRanking() {
     const grid = document.getElementById('rankingGrid');
     if (!grid) return;
 
     const DISCIPLINES = ['Striking', 'MMA', '12 Rounds', 'Performance'];
     const medals = ['🥇','🥈','🥉'];
-    const nameOf = u => {
-      const p = u.name.trim().split(' ');
-      return p.length > 1 ? p[0] + ' ' + p[1][0] + '.' : p[0];
-    };
 
-    // Asistencias reales por disciplina (bookings 'present' → clase → actividad)
-    const members  = users.filter(u => u.role==='member' && u.active);
+    // Ranking público agregado (nombre + conteo, sin exponer perfiles) vía RPC.
+    const rows = await window._sb.loadLeaderboard();
     const byDisc = {}; DISCIPLINES.forEach(d => byDisc[d] = []);
-    members.forEach(u => {
-      const counts = {};
-      bookings.filter(b => Number(b.userId)===u.id && b.status==='present').forEach(b => {
-        const cls = classes.find(c => c.id === b.classId);
-        if (cls) counts[cls.actividad] = (counts[cls.actividad]||0) + 1;
-      });
-      Object.entries(counts).forEach(([disc, count]) => {
-        if (byDisc[disc]) byDisc[disc].push({ uid: u.id, display: nameOf(u), count });
-      });
-    });
-
-    // Relleno demo por disciplina (se combina con datos reales, sin duplicar nombres)
-    const demoByDisc = {
-      'Striking':   [{display:'Martín G.',   count:14},{display:'Camila T.',  count:11},{display:'Rodrigo S.', count:9}],
-      'MMA':        [{display:'Nicolás H.',  count:10},{display:'Diego F.',   count:8}, {display:'Valentina R.',count:6}],
-      '12 Rounds':  [{display:'Lucía P.',    count:12},{display:'Martín G.',  count:7}, {display:'Camila T.',  count:6}],
-      'Performance':[{display:'Rodrigo S.',  count:13},{display:'Valentina R.',count:9},{display:'Diego F.',   count:7}],
-    };
+    rows.forEach(r => { if (byDisc[r.actividad]) byDisc[r.actividad].push(r); });
 
     let html = '<div class="mvp-disc-grid">';
     DISCIPLINES.forEach(disc => {
-      const combined = [...byDisc[disc]];
-      demoByDisc[disc].forEach(d => { if (!combined.find(r => r.display===d.display)) combined.push(d); });
-      combined.sort((a,b) => b.count - a.count);
-      const top3 = combined.slice(0,3);
+      const top3 = byDisc[disc].slice(0,3);
       html += `<div class="mvp-disc-col">
         <div class="mvp-disc-head">${discIcon(disc)}<span>${esc(disc)}</span></div>
-        ${top3.map((r,i) => {
-          const isMe = currentUser && r.uid === currentUser.id;
-          return `<div class="mvp-disc-row${isMe?' rank-highlight':''}">
+        ${top3.length ? top3.map((r,i) => `
+          <div class="mvp-disc-row">
             <span class="mvp-disc-pos">${medals[i]||i+1}</span>
             <span class="mvp-disc-name">${esc(r.display)}</span>
             <span class="mvp-disc-count">${r.count}</span>
-          </div>`;
-        }).join('')}
+          </div>`).join('') : `<div class="mvp-disc-row"><span class="mvp-disc-name" style="color:var(--dim);">Todavía sin datos</span></div>`}
       </div>`;
     });
     html += '</div>';
