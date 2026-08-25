@@ -714,6 +714,61 @@
   };
 
   /**
+   * _sb.loadBookingsForDate(dateIso)
+   * Carga las reservas de UNA fecha específica, sin límite hacia atrás
+   * (para poder pasar lista de cualquier clase pasada, no solo esta semana).
+   * Admin ve todas (RLS bookings_select_admin); un member vería solo las suyas.
+   *
+   * Retorna: array de bookings (formato demo).
+   */
+  _sb.loadBookingsForDate = async function (dateIso) {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('class_date', dateIso)
+        .order('reserved_at', { ascending: false });
+
+      if (error) {
+        console.error('[_sb.loadBookingsForDate] error:', error);
+        return [];
+      }
+      return (data || []).map(_mapBooking);
+    } catch (err) {
+      console.error('[_sb.loadBookingsForDate] error inesperado:', err);
+      return [];
+    }
+  };
+
+  /**
+   * _sb.loadBookingsForWeek(mondayIso, fridayIso)
+   * Carga las reservas de una semana arbitraria (para el Dashboard general,
+   * navegable libremente hacia atrás, no solo la semana actual).
+   * Admin ve todas (RLS bookings_select_admin).
+   *
+   * Retorna: array de bookings (formato demo).
+   */
+  _sb.loadBookingsForWeek = async function (mondayIso, fridayIso) {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .gte('class_date', mondayIso)
+        .lte('class_date', fridayIso)
+        .order('reserved_at', { ascending: false });
+
+      if (error) {
+        console.error('[_sb.loadBookingsForWeek] error:', error);
+        return [];
+      }
+      return (data || []).map(_mapBooking);
+    } catch (err) {
+      console.error('[_sb.loadBookingsForWeek] error inesperado:', err);
+      return [];
+    }
+  };
+
+  /**
    * _sb.loadPublicClasses()
    * Carga el horario público (sin necesidad de sesión). Usar para visitantes
    * anónimos que todavía no iniciaron sesión.

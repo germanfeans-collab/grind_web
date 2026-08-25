@@ -1142,6 +1142,12 @@ html{scroll-behavior:smooth;}
         <div class="a-ph">
           <div><div class="a-page-title">Dashboard</div><div class="a-page-sub" id="dashWeek"></div></div>
         </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+          <button class="btn-sm" onclick="_g.shiftDashWeek(-1)">← Semana anterior</button>
+          <span id="dashWeekRange" style="font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;"></span>
+          <button class="btn-sm" onclick="_g.shiftDashWeek(1)">Semana siguiente →</button>
+          <button class="btn-sm" onclick="_g.goToCurrentDashWeek()">Semana actual</button>
+        </div>
         <div class="m-grid">
           <div class="m-card hl"><div class="m-lbl">Asistencias esta semana</div><div class="m-val" id="mvAsistencias">—</div></div>
           <div class="m-card"><div class="m-lbl">Reservas activas hoy</div><div class="m-val" id="mvReservasHoy">—</div></div>
@@ -1225,13 +1231,13 @@ html{scroll-behavior:smooth;}
           <div><div class="a-page-title">Asistencia</div><div class="a-page-sub">Pasá lista por clase y día</div></div>
           <button class="btn-ghost" onclick="_g.exportAttendanceCSV()" style="font-size:11px;padding:6px 16px;">↓ Exportar CSV</button>
         </div>
-        <!-- Day tabs -->
-        <div class="att-day-tabs" id="attDayTabs">
-          <button class="att-day-tab active" data-day="Lunes"     onclick="_g.setAttDay('Lunes',this)">LUN</button>
-          <button class="att-day-tab"        data-day="Martes"    onclick="_g.setAttDay('Martes',this)">MAR</button>
-          <button class="att-day-tab"        data-day="Miércoles" onclick="_g.setAttDay('Miércoles',this)">MIÉ</button>
-          <button class="att-day-tab"        data-day="Jueves"    onclick="_g.setAttDay('Jueves',this)">JUE</button>
-          <button class="att-day-tab"        data-day="Viernes"   onclick="_g.setAttDay('Viernes',this)">VIE</button>
+        <!-- Selector de fecha (sin límite hacia atrás) -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <button class="btn-sm" onclick="_g.shiftAttDate(-1)">← Día anterior</button>
+          <input type="date" id="attDateInput" class="a-select" style="flex:0 0 auto;" min="2026-08-01" onchange="_g.setAttDate(this.value)">
+          <button class="btn-sm" onclick="_g.shiftAttDate(1)">Día siguiente →</button>
+          <button class="btn-sm" onclick="_g.goToTodayAtt()">Hoy</button>
+          <span id="attDateWeekday" style="font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;"></span>
         </div>
         <!-- Classes of selected day -->
         <div id="attClassCards" style="display:flex;flex-direction:column;gap:1px;background:var(--wire);margin-bottom:2px;"></div>
@@ -1419,7 +1425,7 @@ html{scroll-behavior:smooth;}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-integration.js"></script>
+<script src="supabase-integration.js?v=6"></script>
 <script>
 (function () {
   'use strict';
@@ -1513,6 +1519,8 @@ html{scroll-behavior:smooth;}
   let bookings = [];
   let nextBid = 1;
   let attSelectedDay = 'Lunes', attSelectedClassId = 1;
+  let attSelectedDate = null; // ISO YYYY-MM-DD; se inicializa a "hoy" en renderAttendance()
+  let attBookings = [];       // reservas de attSelectedDate únicamente (sin límite hacia atrás)
 
   let currentUser = null, pendingClass = null;
 
@@ -1543,6 +1551,33 @@ html{scroll-behavior:smooth;}
     const d = new Date(today);
     d.setDate(today.getDate() + diff);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  // Fecha ISO de `dia` dentro de la semana actual (Lun-Vie que contiene "hoy"),
+  // sin proyectar a la próxima semana si ese día ya pasó. Usar para asistencia
+  // (pasar lista, dashboard) — no para reservas futuras (usar classDateFor).
+  function weekdayDateThisWeek(dia) {
+    const today     = nowMVD();
+    const todayIdx  = today.getDay();               // 0=Dom ... 6=Sáb
+    const dayIdx    = DAYS.indexOf(dia);             // 1=Lun ... 5=Vie
+    const mondayIdx = todayIdx === 0 ? -6 : 1 - todayIdx;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayIdx);
+    const target = new Date(monday);
+    target.setDate(monday.getDate() + (dayIdx - 1));
+    return `${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}-${String(target.getDate()).padStart(2,'0')}`;
+  }
+
+  // Nombre del día de la semana (WORKDAYS) para una fecha ISO dada, o null si es fin de semana.
+  function weekdayNameFromDate(dateIso) {
+    const [y,m,d] = dateIso.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    return DAYS[dt.getDay()];
+  }
+
+  function todayIso() {
+    const t = nowMVD();
+    return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
   }
 
   function weekDates() {
@@ -1663,15 +1698,54 @@ html{scroll-behavior:smooth;}
   }
 
   /* ── DASHBOARD (datos reales de la semana en curso) ── */
-  function renderDashboard() {
+  let dashSelectedMonday = null; // Date; se inicializa al lunes de la semana actual
+
+  function mondayOfDate(dateObj) {
+    const idx = dateObj.getDay();
+    const offset = idx === 0 ? -6 : 1 - idx;
+    const d = new Date(dateObj);
+    d.setDate(dateObj.getDate() + offset);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+  function isoFromDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  async function shiftDashWeek(delta) {
+    const d = new Date(dashSelectedMonday);
+    d.setDate(d.getDate() + delta*7);
+    const minMonday = mondayOfDate(new Date(GYM_OPENED_ISO + 'T00:00:00'));
+    if (isoFromDate(d) < isoFromDate(minMonday)) return; // no ir antes de la semana de apertura
+    dashSelectedMonday = d;
+    await renderDashboard();
+  }
+  async function goToCurrentDashWeek() {
+    dashSelectedMonday = mondayOfDate(nowMVD());
+    await renderDashboard();
+  }
+
+  async function renderDashboard() {
     const el = document.getElementById('mvAsistencias');
     if (!el) return; // vista aún no montada
 
-    const present = bookings.filter(b => b.status === 'present');
-    const absent  = bookings.filter(b => b.status === 'absent');
-    const reserved= bookings.filter(b => b.status === 'reserved');
-    const todayIso = classDateFor(todayWorkday());
-    const reservasHoy = bookings.filter(b => b.classDate === todayIso && b.status !== 'absent').length;
+    if (!dashSelectedMonday) dashSelectedMonday = mondayOfDate(nowMVD());
+    const monday = dashSelectedMonday;
+    const friday = new Date(monday); friday.setDate(monday.getDate() + 4);
+    const mondayIso = isoFromDate(monday), fridayIso = isoFromDate(friday);
+
+    const labelEl = document.getElementById('dashWeekRange');
+    if (labelEl) {
+      const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      labelEl.textContent = `Semana del ${fmt(monday)} al ${fmt(friday)}`;
+    }
+
+    const weekBookings = await window._sb.loadBookingsForWeek(mondayIso, fridayIso);
+
+    const present = weekBookings.filter(b => b.status === 'present');
+    const absent  = weekBookings.filter(b => b.status === 'absent');
+    const todayStr = todayIso();
+    const reservasHoy = weekBookings.filter(b => b.classDate === todayStr && b.status !== 'absent').length;
     const attRate = (present.length + absent.length) > 0
       ? Math.round(present.length / (present.length + absent.length) * 100)
       : 0;
@@ -1681,10 +1755,11 @@ html{scroll-behavior:smooth;}
     document.getElementById('mvTasa').innerHTML = `${attRate}<small>%</small>`;
     document.getElementById('mvNoShows').textContent = absent.length;
 
-    // Asistencias por día (solo "presentes", esta semana)
+    // Asistencias por día (solo "presentes", semana seleccionada)
     const dayAbbr = { 'Lunes':'Lun','Martes':'Mar','Miércoles':'Mié','Jueves':'Jue','Viernes':'Vie' };
-    const dayCounts = WORKDAYS.map(dia => {
-      const iso = classDateFor(dia);
+    const dayCounts = WORKDAYS.map((dia, i) => {
+      const d = new Date(monday); d.setDate(monday.getDate() + i);
+      const iso = isoFromDate(d);
       return present.filter(b => b.classDate === iso).length;
     });
     const maxDay = Math.max(1, ...dayCounts);
@@ -1692,7 +1767,7 @@ html{scroll-behavior:smooth;}
       <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:${Math.round(dayCounts[i]/maxDay*90)}px"></div></div><div class="chart-day">${dayAbbr[dia]}</div></div>
     `).join('');
 
-    // Consumo por actividad (sobre presentes, esta semana)
+    // Consumo por actividad (sobre presentes, semana seleccionada)
     const DISCIPLINES = ['Striking','MMA','12 Rounds','Performance'];
     const discColors  = ['var(--paper)','var(--mute)','var(--wire2)','var(--slash2)'];
     const discCounts = DISCIPLINES.map(disc =>
@@ -2267,11 +2342,29 @@ html{scroll-behavior:smooth;}
   }
 
   /* ── ATTENDANCE ── */
-  function setAttDay(day, btn) {
-    attSelectedDay = day;
-    document.querySelectorAll('.att-day-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+  const GYM_OPENED_ISO = '2026-08-01';
+
+  async function setAttDate(dateIso) {
+    if (!dateIso) return;
+    if (dateIso < GYM_OPENED_ISO) dateIso = GYM_OPENED_ISO;
+    attSelectedDate = dateIso;
+    attSelectedDay  = weekdayNameFromDate(dateIso);
+    document.getElementById('attDateInput').value = dateIso;
+    const wd = document.getElementById('attDateWeekday');
+    if (wd) wd.textContent = attSelectedDay && WORKDAYS.includes(attSelectedDay) ? attSelectedDay : 'Fin de semana — gym cerrado';
+    attBookings = await window._sb.loadBookingsForDate(dateIso);
     renderAttClassCards();
+  }
+
+  function shiftAttDate(delta) {
+    const d = new Date(attSelectedDate + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    setAttDate(iso);
+  }
+
+  function goToTodayAtt() {
+    setAttDate(todayIso());
   }
 
   function renderAttClassCards() {
@@ -2287,9 +2380,9 @@ html{scroll-behavior:smooth;}
     }
 
     container.innerHTML = dayClasses.map(c => {
-      const pct      = Math.round(c.reservas / c.capacidad * 100);
+      const bkgs     = attBookings.filter(b => b.classId === c.id);
+      const pct      = Math.round(bkgs.filter(b=>b.status!=='absent').length / c.capacidad * 100);
       const capColor = pct>=100?'var(--slash)':pct>=80?'var(--mute)':'var(--paper)';
-      const bkgs     = bookings.filter(b => b.classId === c.id);
       const isSelected = c.id === attSelectedClassId;
       return `<div class="att-class-card${isSelected?' selected':''}" onclick="_g.selectAttClass(${c.id})">
         <div class="att-class-info">
@@ -2301,7 +2394,7 @@ html{scroll-behavior:smooth;}
         </div>
         <div class="att-class-right">
           <div>
-            <div class="att-class-cap">${c.reservas}/${c.capacidad}</div>
+            <div class="att-class-cap">${bkgs.filter(b=>b.status!=='absent').length}/${c.capacidad}</div>
             <div class="att-mini-bar"><div class="att-mini-fill" style="width:${pct}%;background:${capColor}"></div></div>
           </div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;">
@@ -2331,7 +2424,7 @@ html{scroll-behavior:smooth;}
     const box  = document.getElementById('attListBox');
     if (!cls) { box.style.display = 'none'; return; }
 
-    const bkgs = bookings.filter(b => b.classId === attSelectedClassId);
+    const bkgs = attBookings.filter(b => b.classId === attSelectedClassId);
     box.style.display = 'block';
 
     document.getElementById('attListTitle').textContent =
@@ -2380,15 +2473,16 @@ html{scroll-behavior:smooth;}
   }
 
   async function setAttStatus(bookingId, status) {
-    const b = bookings.find(x => x.id === bookingId);
+    const b = attBookings.find(x => x.id === bookingId);
     if (!b) return;
     const ok = await window._sb.setAttendanceStatus(bookingId, status);
     if (!ok) { showToast('No se pudo actualizar', 'Intentá de nuevo.'); return; }
+    attBookings = await window._sb.loadBookingsForDate(attSelectedDate);
     await refreshData();
     renderAttList();
     renderAttClassCards();
     renderCapAlerts();
-    // Sync public site: strip + grid reflect new status
+    // Sync public site: strip + grid reflect new status (si la fecha cae en la semana actual)
     renderScheduleGrid();
     renderHeroStrip();
     renderStreakBar();
@@ -2396,7 +2490,7 @@ html{scroll-behavior:smooth;}
   }
 
   function renderAttendance() {
-    renderAttClassCards();
+    setAttDate(todayIso());
   }
 
   async function addWalkIn() {
@@ -2407,9 +2501,10 @@ html{scroll-behavior:smooth;}
     try {
       await window._sb.adminAddAttendance({
         classId: attSelectedClassId,
-        classDate: classDateFor(cls.dia),
+        classDate: attSelectedDate,
         userId,
       });
+      attBookings = await window._sb.loadBookingsForDate(attSelectedDate);
       await refreshData();
       renderAttList();
       renderAttClassCards();
@@ -2901,11 +2996,11 @@ html{scroll-behavior:smooth;}
   window._g = {
     openLoginModal, closeLoginModal, doLogin, doLogout,
     toggleMenu, closeMenu, renderStreakBar, renderRanking, renderMemberPlan,
-    showView,
+    showView, shiftDashWeek, goToCurrentDashWeek,
     renderClassesTable, openClassModal, closeClassModal, saveClass, deleteClass,
     renderUsersTable, openUserModal, closeUserModal, saveUser, toggleUser, deleteUser,
     renderAttendance, exportAttendanceCSV,
-    setAttDay, selectAttClass, setAttStatus, addWalkIn,
+    setAttDate, shiftAttDate, goToTodayAtt, selectAttClass, setAttStatus, addWalkIn,
     onCellClick, filterGrid, confirmBooking, cancelBooking, renderHeroStrip,
     setScheduleMobileDay,
     confirmCancelBooking, handleBookingConfirm,
