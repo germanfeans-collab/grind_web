@@ -431,7 +431,7 @@ footer{background:var(--ink2);padding:52px 52px 24px;border-top:1px solid var(--
 .a-page-sub{font-size:14px;color:var(--dim);margin-top:3px;}
 .a-view{display:none;}
 .a-view.active{display:block;}
-.m-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--wire);margin-bottom:28px;}
+.m-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--wire);margin-bottom:28px;}
 .m-card{background:var(--ink2);padding:22px 20px;position:relative;}
 .m-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--wire);}
 .m-card.hl::after{background:linear-gradient(90deg,var(--paper) 50%,transparent 100%);}
@@ -448,7 +448,8 @@ footer{background:var(--ink2);padding:52px 52px 24px;border-top:1px solid var(--
 .chart-wrap{display:flex;align-items:flex-end;gap:7px;height:90px;}
 .chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
 .chart-bars{display:flex;gap:2px;align-items:flex-end;height:72px;}
-.bar{width:12px;border-radius:1px 1px 0 0;}
+.bar{width:12px;border-radius:1px 1px 0 0;position:relative;}
+.bar-val{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;color:var(--dim);white-space:nowrap;}
 .bar.p{background:var(--paper);}
 .bar.s{background:var(--wire2);}
 .chart-day{font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;}
@@ -763,7 +764,7 @@ html{scroll-behavior:smooth;}
       <div class="hero-strip-inner" id="heroStrip">
         <div class="hero-strip-label">
           <div class="hero-strip-label-dot"></div>
-          <div class="hero-strip-label-text">Clases<br>de hoy</div>
+          <div class="hero-strip-label-text" id="heroStripLabel">Clases<br>de hoy</div>
         </div>
         <div class="hero-strip-empty" id="heroStripEmpty" style="display:none;">Sin clases programadas hoy</div>
       </div>
@@ -789,7 +790,7 @@ html{scroll-behavior:smooth;}
     </div>
     <div class="streak-vip" id="streakVip">
       <span class="vip-badge">★ VIP</span>
-      <span style="font-size:11px;color:var(--dim);">Reservas 20:00</span>
+      <span style="font-size:11px;color:var(--dim);">Reservas 19:00</span>
     </div>
     <div class="streak-cta"><a href="#horarios" class="btn btn-white" style="font-size:11px;padding:10px 22px;">Reservar →</a></div>
   </div>
@@ -1153,6 +1154,7 @@ html{scroll-behavior:smooth;}
           <div class="m-card"><div class="m-lbl">Reservas activas hoy</div><div class="m-val" id="mvReservasHoy">—</div></div>
           <div class="m-card"><div class="m-lbl">Tasa de asistencia</div><div class="m-val" id="mvTasa">—<small>%</small></div></div>
           <div class="m-card"><div class="m-lbl">No-shows esta semana</div><div class="m-val" id="mvNoShows">—</div></div>
+          <div class="m-card"><div class="m-lbl">Socios activos esta semana</div><div class="m-val" id="mvActivosSemana">—</div></div>
         </div>
         <div class="d-row">
           <div class="d-panel">
@@ -1202,6 +1204,10 @@ html{scroll-behavior:smooth;}
         <div class="a-ph">
           <div><div class="a-page-title">Usuarios</div><div class="a-page-sub">Alumnos y administradores</div></div>
           <button class="btn btn-white" style="font-size:11px;padding:10px 22px;" onclick="_g.openUserModal(null)">+ Nuevo usuario</button>
+        </div>
+        <div class="m-card hl" style="margin-bottom:20px;padding:16px 20px;display:flex;align-items:center;gap:14px;">
+          <div class="m-lbl">Socios activos</div>
+          <div class="m-val" id="mvUsuariosActivos" style="font-size:22px;">—</div>
         </div>
         <div class="a-box">
           <div class="a-box-head">
@@ -1541,6 +1547,11 @@ html{scroll-behavior:smooth;}
     return (d === 0 || d === 6) ? 'Lunes' : DAYS[d];
   }
 
+  function nextWorkday(dia) {
+    const idx = WORKDAYS.indexOf(dia);
+    return WORKDAYS[(idx + 1) % WORKDAYS.length];
+  }
+
   // Fecha ISO (YYYY-MM-DD) concreta de la próxima ocurrencia de `dia` en la semana actual.
   function classDateFor(dia) {
     const today    = nowMVD();
@@ -1754,6 +1765,8 @@ html{scroll-behavior:smooth;}
     document.getElementById('mvReservasHoy').textContent = reservasHoy;
     document.getElementById('mvTasa').innerHTML = `${attRate}<small>%</small>`;
     document.getElementById('mvNoShows').textContent = absent.length;
+    const activeUserIds = new Set(weekBookings.filter(b => b.status !== 'absent' && b.userId).map(b => b.userId));
+    document.getElementById('mvActivosSemana').textContent = activeUserIds.size;
 
     // Asistencias por día (solo "presentes", semana seleccionada)
     const dayAbbr = { 'Lunes':'Lun','Martes':'Mar','Miércoles':'Mié','Jueves':'Jue','Viernes':'Vie' };
@@ -1764,7 +1777,7 @@ html{scroll-behavior:smooth;}
     });
     const maxDay = Math.max(1, ...dayCounts);
     document.getElementById('attChartWrap').innerHTML = WORKDAYS.map((dia,i) => `
-      <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:${Math.round(dayCounts[i]/maxDay*90)}px"></div></div><div class="chart-day">${dayAbbr[dia]}</div></div>
+      <div class="chart-col"><div class="chart-bars"><div class="bar p" style="height:${Math.max(2,Math.round(dayCounts[i]/maxDay*54))}px"><span class="bar-val">${dayCounts[i]}</span></div></div><div class="chart-day">${dayAbbr[dia]}</div></div>
     `).join('');
 
     // Consumo por actividad (sobre presentes, semana seleccionada)
@@ -2000,12 +2013,12 @@ html{scroll-behavior:smooth;}
     }
     // Mañana (d===1): verifica horario de apertura VIP/general
     const hour = nowMVD().getHours();
-    if (currentUser?.priority) return hour >= 20; // VIP abre 20:00
-    return hour >= 21;                            // general abre 21:00
+    if (currentUser?.priority) return hour >= 19; // VIP abre 19:00
+    return hour >= 20;                            // general abre 20:00
   }
 
   function bookingOpenTimeStr() {
-    return currentUser?.priority ? '20:00' : '21:00';
+    return currentUser?.priority ? '19:00' : '20:00';
   }
 
   function onCellClick(cell) {
@@ -2238,6 +2251,8 @@ html{scroll-behavior:smooth;}
 
   /* ── ADMIN USERS ── */
   function renderUsersTable() {
+    const activosEl = document.getElementById('mvUsuariosActivos');
+    if (activosEl) activosEl.textContent = users.filter(u => u.active).length;
     const q=(document.getElementById('userSearch')?.value||'').toLowerCase();
     const type=document.getElementById('userTypeFilter')?.value||'';
     const rows=users.filter(u=>{
@@ -2575,24 +2590,53 @@ html{scroll-behavior:smooth;}
 
   /* ── INIT ── */
   function renderHeroStrip() {
-    const today   = todayWorkday();
     const strip   = document.getElementById('heroStrip');
     const empty   = document.getElementById('heroStripEmpty');
     if (!strip) return;
     // Remove previous chips
     strip.querySelectorAll('.hero-class-chip').forEach(el => el.remove());
-    const rows = classes
-      .filter(c => c.dia === today && c.estado === 'active' && !classPassed(c))
+
+    const isAdmin = currentUser?.role === 'admin';
+    const myBookingFor = c => currentUser && bookings.find(b => Number(b.classId)===c.id && b.userId===currentUser.id && b.status==='reserved');
+    // ¿Vale la pena mostrar esta clase de hoy? (ya reservada, o realmente reservable ahora)
+    const isActionableToday = c => {
+      if (myBookingFor(c)) return true;
+      const pct = Math.round(c.reservas / c.capacidad * 100);
+      if (pct >= 100) return false;
+      return isAdmin || bookingWindowOpen(c);
+    };
+
+    // Si ninguna de hoy sirve ya (cerradas por horario, llenas, o terminadas),
+    // caer al próximo día con clases — acceso rápido a lo próximo reservable.
+    let day = todayWorkday();
+    let isToday = true;
+    const todays = classes.filter(c => c.dia === day && c.estado === 'active' && !classPassed(c))
       .sort((a, b) => a.horario.localeCompare(b.horario));
+    let rows = todays.some(isActionableToday) ? todays : [];
+
+    let attempts = 0;
+    while (!rows.length && attempts < WORKDAYS.length) {
+      day = nextWorkday(day);
+      isToday = false;
+      rows = classes.filter(c => c.dia === day && c.estado === 'active')
+        .sort((a, b) => a.horario.localeCompare(b.horario));
+      attempts++;
+    }
+
+    const dayAbbr = { 'Lunes':'LUN','Martes':'MAR','Miércoles':'MIÉ','Jueves':'JUE','Viernes':'VIE' };
+    const labelEl = document.getElementById('heroStripLabel');
+    if (labelEl) labelEl.innerHTML = isToday ? 'Clases<br>de hoy' : `Próximas<br>${dayAbbr[day]}`;
+
     if (!rows.length) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
     rows.forEach(c => {
       const pct       = Math.round(c.reservas / c.capacidad * 100);
       const full      = pct >= 100;
-      const myBooking = currentUser && bookings.find(b => Number(b.classId)===c.id && b.userId===currentUser.id && b.status==='reserved');
+      const myBooking = myBookingFor(c);
+      const winClosed = !isAdmin && !myBooking && !bookingWindowOpen(c);
       const capColor  = myBooking ? 'var(--green)' : pct>=100 ? 'var(--slash)' : pct>=80 ? 'var(--mute)' : 'var(--paper)';
       const chip      = document.createElement('div');
-      chip.className  = 'hero-class-chip' + (full && !myBooking ? ' full' : '') + (myBooking ? ' booked' : '');
+      chip.className  = 'hero-class-chip' + ((full||winClosed) && !myBooking ? ' full' : '') + (myBooking ? ' booked' : '');
       chip.dataset.cid  = c.id;
       chip.dataset.name = c.actividad;
       chip.dataset.time = c.horario;
@@ -2607,9 +2651,11 @@ html{scroll-behavior:smooth;}
         </div>
         ${myBooking
           ? `<button class="hero-chip-btn" style="background:var(--slash);color:#fff;" onclick="event.stopPropagation();_g.onCellClick(this.closest('.hero-class-chip'))">Cancelar</button>`
-          : !full
-            ? `<button class="hero-chip-btn" onclick="event.stopPropagation();_g.onCellClick(this.closest('.hero-class-chip'))">Reservar</button>`
-            : `<span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;color:var(--slash2);padding:0 16px;flex-shrink:0;">Completa</span>`
+          : full
+            ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;color:var(--slash2);padding:0 16px;flex-shrink:0;">Completa</span>`
+            : winClosed
+              ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;color:var(--wire2);padding:0 16px;flex-shrink:0;">${isToday ? '🔒 Cierra 1h antes' : `🔒 Abre ${bookingOpenTimeStr()} hs`}</span>`
+              : `<button class="hero-chip-btn" onclick="event.stopPropagation();_g.onCellClick(this.closest('.hero-class-chip'))">Reservar</button>`
         }
       `;
       strip.appendChild(chip);
