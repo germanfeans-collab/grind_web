@@ -1246,6 +1246,10 @@ html{scroll-behavior:smooth;}
             </div>
           </div>
           <div class="a-box-body">
+            <div style="display:flex;gap:8px;padding:14px 0;border-bottom:1px solid var(--wire);margin-bottom:6px;">
+              <select class="a-select" id="attWalkInSelect" style="flex:1;"></select>
+              <button class="btn-sm" onclick="_g.addWalkIn()">+ Sumar como presente</button>
+            </div>
             <table>
               <thead><tr><th>Nombre</th><th>Plan</th><th>Reservó</th><th>Clases/mes</th><th style="text-align:right;">Estado</th></tr></thead>
               <tbody id="attTbody"></tbody>
@@ -2178,10 +2182,10 @@ html{scroll-behavior:smooth;}
         <td><span class="sbadge ${u.role==='admin'?'s-red':'s-dim'}">${u.role==='admin'?'Admin':'Alumno'}</span>${u.priority?'<span class="vip-badge" style="margin-left:5px;">★ VIP</span>':''}${u.oneOnOne?'<span class="tag-11" style="margin-left:5px;">1:1</span>':''}${u.paseLibre?'<span class="tag-pl" style="margin-left:5px;">Pase Libre</span>':''}</td>
         <td><span class="sbadge ${u.active?'s-white':'s-dim'}">${u.active?'Activo':'Inactivo'}</span></td>
         <td><div style="display:flex;gap:6px;">
-          <button class="btn-sm" onclick="_g.openUserModal(${u.id})">Editar</button>
+          <button class="btn-sm" onclick="_g.openUserModal('${u.id}')">Editar</button>
           ${u.id!==currentUser?.id?`
-            <button class="btn-sm" onclick="_g.toggleUser(${u.id})">${u.active?'Desactivar':'Activar'}</button>
-            <button class="btn-sm danger" onclick="_g.deleteUser(${u.id})">Eliminar</button>
+            <button class="btn-sm" onclick="_g.toggleUser('${u.id}')">${u.active?'Desactivar':'Activar'}</button>
+            <button class="btn-sm danger" onclick="_g.deleteUser('${u.id}')">Eliminar</button>
           `:'<span style="font-size:11px;color:var(--mute);">Tu cuenta</span>'}
         </div></td>
       </tr>`).join('');
@@ -2336,6 +2340,14 @@ html{scroll-behavior:smooth;}
     document.getElementById('attA').textContent = bkgs.filter(b=>b.status==='absent').length;
     document.getElementById('attR').textContent = bkgs.filter(b=>b.status==='reserved').length;
 
+    // Socios que todavía no figuran en la lista de esta clase (para sumar walk-ins)
+    const alreadyIn = new Set(bkgs.map(b => b.userId));
+    const eligible = users.filter(u => u.role==='member' && u.active && !alreadyIn.has(u.id));
+    const walkInSelect = document.getElementById('attWalkInSelect');
+    walkInSelect.innerHTML = eligible.length
+      ? eligible.map(u => `<option value="${u.id}">${esc(u.name)}</option>`).join('')
+      : `<option value="">No hay socios para sumar</option>`;
+
     const empty = document.getElementById('attEmpty');
     if (!bkgs.length) {
       document.getElementById('attTbody').innerHTML = '';
@@ -2385,6 +2397,30 @@ html{scroll-behavior:smooth;}
 
   function renderAttendance() {
     renderAttClassCards();
+  }
+
+  async function addWalkIn() {
+    const sel = document.getElementById('attWalkInSelect');
+    const userId = sel?.value;
+    const cls = classes.find(c => c.id === attSelectedClassId);
+    if (!userId || !cls) return;
+    try {
+      await window._sb.adminAddAttendance({
+        classId: attSelectedClassId,
+        classDate: classDateFor(cls.dia),
+        userId,
+      });
+      await refreshData();
+      renderAttList();
+      renderAttClassCards();
+      renderCapAlerts();
+      renderScheduleGrid();
+      renderHeroStrip();
+      renderRanking();
+      showToast('Asistencia registrada', sel.options[sel.selectedIndex]?.textContent || '');
+    } catch (errMsg) {
+      showToast('No se pudo sumar', String(errMsg));
+    }
   }
 
   function exportAttendanceCSV() {
@@ -2869,7 +2905,7 @@ html{scroll-behavior:smooth;}
     renderClassesTable, openClassModal, closeClassModal, saveClass, deleteClass,
     renderUsersTable, openUserModal, closeUserModal, saveUser, toggleUser, deleteUser,
     renderAttendance, exportAttendanceCSV,
-    setAttDay, selectAttClass, setAttStatus,
+    setAttDay, selectAttClass, setAttStatus, addWalkIn,
     onCellClick, filterGrid, confirmBooking, cancelBooking, renderHeroStrip,
     setScheduleMobileDay,
     confirmCancelBooking, handleBookingConfirm,

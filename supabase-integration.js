@@ -494,6 +494,30 @@
   };
 
   /**
+   * _sb.adminAddAttendance({ classId, classDate, userId })
+   * Registra la asistencia de un socio que vino SIN haber reservado antes
+   * (walk-in). Si ya tenía una reserva para esa clase/fecha, la marca
+   * presente en vez de duplicarla. Solo admin (RPC admin_add_attendance).
+   *
+   * Retorna: objeto booking (formato demo) o lanza un string de error.
+   */
+  _sb.adminAddAttendance = async function ({ classId, classDate, userId }) {
+    try {
+      const { data, error } = await supabase.rpc('admin_add_attendance', {
+        p_class_id:   classId,
+        p_class_date: classDate,
+        p_user_id:    userId,
+      });
+      if (error) throw error.message || 'Error al registrar la asistencia.';
+      return data ? _mapBooking(data) : null;
+    } catch (err) {
+      if (typeof err === 'string') throw err;
+      console.error('[_sb.adminAddAttendance] error inesperado:', err);
+      throw 'Error inesperado al registrar la asistencia.';
+    }
+  };
+
+  /**
    * _sb.saveClass(classData)
    * Crea o actualiza una clase (upsert).
    * Si classData.id existe → UPDATE; si no → INSERT.
