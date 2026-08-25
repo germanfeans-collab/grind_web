@@ -2272,7 +2272,6 @@ html{scroll-behavior:smooth;}
     document.getElementById('uName').value =u?.name ||'';
     document.getElementById('uCI').value   =u?.ci   ||'';
     document.getElementById('uEmail').value=u?.email||'';
-    document.getElementById('uEmail').disabled = !!id; // el email no se puede cambiar después de creado
     document.getElementById('uPass').closest('.field').style.display = id ? 'none' : '';
     document.getElementById('uPlan').value =u?.plan ||'Mensual';
     document.getElementById('uRole').value =u?.role ||'member';
@@ -2315,8 +2314,13 @@ html{scroll-behavior:smooth;}
       return;
     }
 
-    const active =users.find(x=>x.id===editUid)?.active ?? true;
+    const existing = users.find(x=>x.id===editUid);
+    const active   = existing?.active ?? true;
+    const newEmail = document.getElementById('uEmail').value.trim().toLowerCase();
     try {
+      if (newEmail && existing && newEmail !== existing.email) {
+        await window._sb.adminUpdateEmail({ userId: editUid, email: newEmail });
+      }
       await window._sb.adminUpdateUser({ userId: editUid, name, ci, plan, priority, active, oneOnOne, paseLibre });
       showToast('Usuario actualizado', name);
       await refreshData();

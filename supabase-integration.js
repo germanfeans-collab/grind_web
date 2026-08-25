@@ -626,6 +626,32 @@
   };
 
   /**
+   * _sb.adminUpdateEmail({ userId, email })
+   * Cambia el email de un socio existente. Corre vía la Edge Function
+   * "clever-service" (misma que crea usuarios), con la service_role key
+   * del lado del servidor.
+   *
+   * Retorna: true si se actualizó. Lanza un string de error si falla.
+   */
+  _sb.adminUpdateEmail = async function ({ userId, email }) {
+    try {
+      const { data, error } = await supabase.functions.invoke('clever-service', {
+        body: { action: 'update_email', userId, email },
+      });
+      if (error) {
+        const detail = data?.error || error.message || 'Error al actualizar el email.';
+        throw detail;
+      }
+      if (data?.error) throw data.error;
+      return true;
+    } catch (err) {
+      if (typeof err === 'string') throw err;
+      console.error('[_sb.adminUpdateEmail] error inesperado:', err);
+      throw 'Error inesperado al actualizar el email.';
+    }
+  };
+
+  /**
    * _sb.adminUpdateUser({ userId, name, ci, plan, priority, active, oneOnOne, paseLibre })
    * Actualiza name, ci, plan, priority, active y las etiquetas 1:1 / Pase Libre de un socio.
    * Solo admin (verificado en la función RPC admin_update_user).
