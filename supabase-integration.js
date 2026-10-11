@@ -137,7 +137,7 @@
       id:        row.id,           // uuid string
       name:      row.name,
       ci:        row.ci || '',
-      email:     row.email || '',  // el email está en auth.users, puede no estar en profiles
+      email:     row.email || '',  // get_all_profiles lo obtiene de auth.users para el admin
       role:      row.role,
       plan:      row.plan,
       active:    row.active,
@@ -145,6 +145,7 @@
       oneOnOne:  row.one_on_one  || false,
       paseLibre: row.pase_libre  || false,
       planStart: row.plan_start || null,
+      createdAt: row.created_at || null,
     };
   }
 
@@ -239,10 +240,7 @@
         _mapClass(row, reservasPorClass[row.id] ?? row.reservas ?? 0)
       );
 
-      // Para admin: enriquecer perfiles con email de auth.users si está disponible
-      // (get_all_profiles devuelve profiles sin email; el email vive en auth.users)
-      // En la vista de socios, el admin puede ver el email si lo necesita desde el
-      // Dashboard de Supabase o agregando un join en la función RPC.
+      // Para admin, get_all_profiles devuelve el perfil junto con el email de auth.users.
       const rawUsers = usersRes.data || [];
       const users = isAdmin
         ? rawUsers.map(_mapProfile)
