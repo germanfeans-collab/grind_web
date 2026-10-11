@@ -650,6 +650,19 @@
   };
 
   /**
+   * Obtiene nuevamente el email de un usuario para el modal de edición.
+   * Evita depender de que el listado guardado en memoria esté actualizado.
+   */
+  _sb.adminGetUserEmail = async function (userId) {
+    const { data, error } = await supabase.rpc('get_all_profiles');
+    if (error) {
+      console.error('[_sb.adminGetUserEmail] error:', error);
+      throw error.message || 'No se pudo obtener el email.';
+    }
+    return (data || []).find((row) => row.id === userId)?.email || '';
+  };
+
+  /**
    * _sb.adminUpdateUser({ userId, name, ci, plan, priority, active, oneOnOne, paseLibre })
    * Actualiza name, ci, plan, priority, active y las etiquetas 1:1 / Pase Libre de un socio.
    * Solo admin (verificado en la función RPC admin_update_user).
