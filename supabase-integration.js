@@ -146,6 +146,11 @@
       paseLibre: row.pase_libre  || false,
       planStart: row.plan_start || null,
       createdAt: row.created_at || null,
+      contractStart: row.contract_start || null,
+      paymentMethod: row.payment_method || '',
+      contractEnd:   row.contract_end   || null,
+      sex:           row.sex            || '',
+      birthDate:     row.birth_date     || null,
     };
   }
 
@@ -695,6 +700,31 @@
       if (typeof err === 'string') throw err;
       console.error('[_sb.adminUpdateUser] error inesperado:', err);
       throw 'Error inesperado al actualizar el usuario.';
+    }
+  };
+
+  /**
+   * _sb.adminUpdateUserDetails({ userId, contractStart, paymentMethod, contractEnd, sex, birthDate })
+   * Guarda fecha de alta del contrato, forma de pago, fecha de baja,
+   * sexo y fecha de nacimiento (RPC admin_update_user_details, migración v7).
+   * Fechas en formato 'AAAA-MM-DD' o null.
+   */
+  _sb.adminUpdateUserDetails = async function ({ userId, contractStart, paymentMethod, contractEnd, sex, birthDate }) {
+    try {
+      const { error } = await supabase.rpc('admin_update_user_details', {
+        target_id:          userId,
+        new_contract_start: contractStart || null,
+        new_payment_method: paymentMethod || null,
+        new_contract_end:   contractEnd   || null,
+        new_sex:            sex           || null,
+        new_birth_date:     birthDate     || null,
+      });
+      if (error) throw error.message || 'Error al guardar los datos del contrato.';
+      return true;
+    } catch (err) {
+      if (typeof err === 'string') throw err;
+      console.error('[_sb.adminUpdateUserDetails] error inesperado:', err);
+      throw 'Error inesperado al guardar los datos del contrato.';
     }
   };
 
