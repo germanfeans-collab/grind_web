@@ -151,6 +151,10 @@
       contractEnd:   row.contract_end   || null,
       sex:           row.sex            || '',
       birthDate:     row.birth_date     || null,
+      contractFinish: row.contract_finish || null,
+      mandateActive:  !!row.mandate_active,
+      mandateSince:   row.mandate_since   || null,
+      inactiveAt:     row.inactive_at     || null,
     };
   }
 
@@ -709,15 +713,18 @@
    * sexo y fecha de nacimiento (RPC admin_update_user_details, migración v7).
    * Fechas en formato 'AAAA-MM-DD' o null.
    */
-  _sb.adminUpdateUserDetails = async function ({ userId, contractStart, paymentMethod, contractEnd, sex, birthDate }) {
+  _sb.adminUpdateUserDetails = async function ({ userId, contractStart, paymentMethod, contractEnd, sex, birthDate, contractFinish, mandateActive, mandateSince }) {
     try {
-      const { error } = await supabase.rpc('admin_update_user_details', {
-        target_id:          userId,
-        new_contract_start: contractStart || null,
-        new_payment_method: paymentMethod || null,
-        new_contract_end:   contractEnd   || null,
-        new_sex:            sex           || null,
-        new_birth_date:     birthDate     || null,
+      const { error } = await supabase.rpc('admin_update_user_details_v2', {
+        target_id:           userId,
+        new_contract_start:  contractStart  || null,
+        new_payment_method:  paymentMethod  || null,
+        new_contract_end:    contractEnd    || null,
+        new_sex:             sex            || null,
+        new_birth_date:      birthDate      || null,
+        new_contract_finish: contractFinish || null,
+        new_mandate_active:  !!mandateActive,
+        new_mandate_since:   mandateSince   || null,
       });
       if (error) throw error.message || 'Error al guardar los datos del contrato.';
       return true;
@@ -787,6 +794,73 @@
   _sb.deleteSale = async function (id) {
     const { error } = await supabase.from('sales').delete().eq('id', id);
     if (error) throw error.message || 'No se pudo eliminar la venta.';
+    return true;
+  };
+
+  /* ══ PAGOS DE CUOTA Y DÉBITO AUTOMÁTICO (migración v10) ═══════ */
+
+  function _mapPayment(r) {
+    return { id: r.id, profileId: r.profile_id, period: r.period, amount: Number(r.amount),
+             method: r.method, paidAt: r.paid_at, note: r.note || '', batchId: r.batch_id || null };
+  }
+  /** Todos los pagos de cuota registrados. */
+  _sb.loadPayments = async function () {
+    const { data, error } = await supabase.from('payments').select('*').order('paid_at', { ascending: false });
+    if (error) throw error.message || 'No se pudieron cargar los pagos.';
+    return (data || []).map(_mapPayment);
+  };
+  /** Registra uno o varios pagos: [{ profileId, period, amount, method, paidAt, note, batchId }] */
+  _sb.addPayments = async function (list) {
+    const rows = list.map(p => ({ profile_id: p.profileId, period: p.period, amount: p.amount, method: p.method,
+                                  paid_at: p.paidAt, note: p.note || null, batch_id: p.batchId || null }));
+    const { data, error } = await supabase.from('payments').insert(rows).select();
+    if (error) throw error.message || 'No se pudo registrar el pago.';
+    return (data || []).map(_mapPayment);
+  };
+  _sb.deletePayment = async function (id) {
+    const { error } = await supabase.from('payments').delete().eq('id', id);
+    if (error) throw error.message || 'No se pudo eliminar el pago.';
+    return true;
+  };
+
+  /** Lotes de débito con sus líneas. */
+  _sb.loadDebitBatches = async function () {
+    const [b, i] = await Promise.all([
+      supabase.from('debit_batches').select('*').order('created_at', { ascending: false }),
+      supabase.from('debit_batch_items').select('*').order('id'),
+    ]);
+    if (b.error) throw b.error.message || 'No se pudieron cargar los lotes.';
+    if (i.error) throw i.error.message || 'No se pudieron cargar las líneas del lote.';
+    const batches = (b.data || []).map(r => ({ id: r.id, chargeDate: r.charge_date, fileName: r.file_name,
+      total: Number(r.total), lines: r.lines, status: r.status, createdAt: r.created_at, items: [] }));
+    const by = {}; batches.forEach(x => by[x.id] = x);
+    (i.data || []).forEach(r => { const bt = by[r.batch_id]; if (bt) bt.items.push({ id: r.id, profileId: r.profile_id,
+      ci: r.ci, name: r.name || '', periods: r.periods || [], amount: Number(r.amount), result: r.result }); });
+    return batches;
+  };
+  /** Guarda un lote generado: { chargeDate, fileName, total, items:[{profileId, ci, name, periods, amount}] } */
+  _sb.createDebitBatch = async function (bt) {
+    const { data, error } = await supabase.from('debit_batches')
+      .insert({ charge_date: bt.chargeDate, file_name: bt.fileName, total: bt.total, lines: bt.items.length }).select().single();
+    if (error) throw error.message || 'No se pudo guardar el lote.';
+    const rows = bt.items.map(x => ({ batch_id: data.id, profile_id: x.profileId, ci: x.ci, name: x.name, periods: x.periods, amount: x.amount }));
+    const r2 = await supabase.from('debit_batch_items').insert(rows);
+    if (r2.error) throw r2.error.message || 'No se pudieron guardar las líneas del lote.';
+    return data.id;
+  };
+  _sb.setDebitItemResult = async function (itemId, result) {
+    const { error } = await supabase.from('debit_batch_items').update({ result }).eq('id', itemId);
+    if (error) throw error.message || 'No se pudo guardar el resultado.';
+    return true;
+  };
+  _sb.setDebitBatchStatus = async function (batchId, status) {
+    const { error } = await supabase.from('debit_batches').update({ status }).eq('id', batchId);
+    if (error) throw error.message || 'No se pudo actualizar el lote.';
+    return true;
+  };
+  _sb.deleteDebitBatch = async function (batchId) {
+    const { error } = await supabase.from('debit_batches').delete().eq('id', batchId);
+    if (error) throw error.message || 'No se pudo eliminar el lote.';
     return true;
   };
 
